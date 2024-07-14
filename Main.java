@@ -11,14 +11,16 @@ public class Main {
         System.out.print("Masukkan input : ");
 
         int choice = scanner.nextInt();
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
 
         switch (choice) {
             case 1:
-                BuyVehicleService.buyVehicle(scanner);
+                buyVehicleService buyService = new buyVehicleService(scanner);
+                buyService.buyVehicle();
                 break;
             case 2:
-                ServiceVehicleService.serviceVehicle(scanner);
+                serviceVehicleService serviceService = new serviceVehicleService(scanner);
+                serviceService.serviceVehicle();
                 break;
             default:
                 System.out.println("Pilihan tidak valid.");

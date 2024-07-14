@@ -2,18 +2,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class BuyVehicleService {
-    public static void buyVehicle(Scanner scanner) {
+public class buyVehicleService {
+    private Scanner scanner;
+    private Map<String, Integer> vehicles;
+    private String vehicleType;
+
+    public buyVehicleService(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public void buyVehicle() {
         System.out.println("Pilih kendaraan yang ingin Anda beli:");
         System.out.println("1. Mobil");
         System.out.println("2. Motor");
         System.out.print("Masukkan input : ");
 
         int vehicleChoice = scanner.nextInt();
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
 
-        Map<String, Integer> vehicles = new HashMap<>();
-        String vehicleType = "";
+        vehicles = new HashMap<>();
+        vehicleType = "";
         switch (vehicleChoice) {
             case 1:
                 vehicles.put("Nissan GTR", 300000000);
@@ -45,7 +53,7 @@ public class BuyVehicleService {
         System.out.print("Masukkan input : ");
 
         int selectedVehicleIndex = scanner.nextInt() - 1;
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
 
         if (selectedVehicleIndex < 0 || selectedVehicleIndex >= vehicles.size()) {
             System.out.println("Pilihan tidak valid.");

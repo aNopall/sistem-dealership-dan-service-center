@@ -9,7 +9,7 @@ public class PaymentProcessor {
         System.out.print("Masukkan input : ");
 
         int paymentChoice = scanner.nextInt();
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
 
         String paymentMethod = "";
         switch (paymentChoice) {

@@ -2,18 +2,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class ServiceVehicleService {
-    public static void serviceVehicle(Scanner scanner) {
+public class serviceVehicleService {
+    private Scanner scanner;
+    private String service;
+    private Map<String, Integer> components;
+    private int totalCost;
+    private StringBuilder selectedComponents;
+
+    public serviceVehicleService(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public void serviceVehicle() {
         System.out.println("Pilih jenis servis:");
         System.out.println("1. Servis");
         System.out.println("2. Tune Up");
         System.out.print("Masukkan input : ");
 
         int serviceChoice = scanner.nextInt();
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
 
-        String service = "";
-        Map<String, Integer> components = new HashMap<>();
+        service = "";
+        components = new HashMap<>();
         if (serviceChoice == 1) {
             service = "Servis";
             components.put("Mesin dan Komponen Utama", 1000000);
@@ -45,8 +55,8 @@ public class ServiceVehicleService {
             return;
         }
 
-        int totalCost = 0;
-        StringBuilder selectedComponents = new StringBuilder();
+        totalCost = 0;
+        selectedComponents = new StringBuilder();
         for (Map.Entry<String, Integer> entry : components.entrySet()) {
             System.out.println(entry.getKey() + " (Rp" + entry.getValue() + "):");
             System.out.print("Masukkan input : ");
