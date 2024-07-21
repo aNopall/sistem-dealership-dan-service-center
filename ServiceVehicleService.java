@@ -1,88 +1,98 @@
+import javax.swing.*;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 public class serviceVehicleService {
-    private Scanner scanner;
-    private String service;
+    private JPanel panel;
     private Map<String, Integer> components;
+    private String service;
     private int totalCost;
     private StringBuilder selectedComponents;
+    private JPanel mainPanel;
+    private CardLayout cardLayout;
 
-    public serviceVehicleService(Scanner scanner) {
-        this.scanner = scanner;
+    public serviceVehicleService(JPanel mainPanel, CardLayout cardLayout) {
+        this.mainPanel = mainPanel;
+        this.cardLayout = cardLayout;
+        panel = new JPanel();
+        panel.setLayout(null);
+
+        JLabel chooseServiceLabel = new JLabel("Pilih jenis layanan:");
+        chooseServiceLabel.setBounds(10, 20, 480, 25);
+        panel.add(chooseServiceLabel);
+
+        JButton serviceButton = new JButton("Servis");
+        serviceButton.setBounds(10, 60, 150, 25);
+        panel.add(serviceButton);
+        serviceButton.addActionListener(e -> selectService(1));
+
+        JButton tuneUpButton = new JButton("Tune Up");
+        tuneUpButton.setBounds(10, 100, 150, 25);
+        panel.add(tuneUpButton);
+        tuneUpButton.addActionListener(e -> selectService(2));
     }
 
-    public void serviceVehicle() {
-        System.out.println("Pilih jenis servis:");
-        System.out.println("1. Servis");
-        System.out.println("2. Tune Up");
-        System.out.print("Masukkan input : ");
+    public JPanel getPanel() {
+        return panel;
+    }
 
-        int serviceChoice = scanner.nextInt();
-        scanner.nextLine();
+    private void selectService(int serviceChoice) {
+        components = ServiceComponentManagement.getServiceComponents(serviceChoice);
+        service = (serviceChoice == 1) ? "Servis" : "Tune Up";
 
-        service = "";
-        components = new HashMap<>();
-        if (serviceChoice == 1) {
-            service = "Servis";
-            components.put("Mesin dan Komponen Utama", 1000000);
-            components.put("Sistem Kelistrikan", 750000);
-            components.put("Sistem Rem", 500000);
-            components.put("Sistem Kemudi dan Suspensi", 700000);
-            components.put("Sistem Pembuangan", 600000);
-            components.put("Interior dan Eksterior", 450000);
-            components.put("Sistem Bahan Bakar", 800000);
-            components.put("AC dan Sistem Pemanas", 550000);
-            components.put("Sistem Transmisi", 900000);
-            System.out.println(
-                    "Pilih komponen yang ingin diperiksa (masukkan 'Rusak' atau 'Tidak' untuk setiap komponen):");
-        } else if (serviceChoice == 2) {
-            service = "Tune Up";
-            components.put("Penggantian Oli Mesin", 200000);
-            components.put("Pembersihan Filter Udara", 150000);
-            components.put("Pemeriksaan Busi", 100000);
-            components.put("Penggantian Filter Bahan Bakar", 250000);
-            components.put("Pemeriksaan Timing Belt", 300000);
-            components.put("Penggantian Filter Oli", 150000);
-            components.put("Pembersihan Throttle Body", 200000);
-            components.put("Pemeriksaan Sistem Pendingin", 250000);
-            components.put("Pemeriksaan Sistem Knalpot", 200000);
-            System.out.println(
-                    "Pilih komponen yang ingin di tune up (masukkan 'Iya' atau 'Tidak' untuk setiap komponen):");
-        } else {
-            System.out.println("Pilihan tidak valid.");
-            return;
-        }
+        JPanel componentPanel = new JPanel();
+        componentPanel.setLayout(null);
 
-        totalCost = 0;
-        selectedComponents = new StringBuilder();
+        JLabel instructionLabel = new JLabel(service.equals("Servis")
+                ? "Pilih komponen yang ingin diperiksa :"
+                : "Pilih komponen yang ingin di tune up :");
+        instructionLabel.setBounds(10, 20, 480, 25);
+        componentPanel.add(instructionLabel);
+
+        int yPos = 60;
+        Map<JCheckBox, String> checkBoxMap = new HashMap<>();
         for (Map.Entry<String, Integer> entry : components.entrySet()) {
-            System.out.println(entry.getKey() + " (Rp" + entry.getValue() + "):");
-            System.out.print("Masukkan input : ");
-            String condition = scanner.nextLine();
-            if (condition.equalsIgnoreCase("Rusak") || condition.equalsIgnoreCase("Iya")) {
-                totalCost += entry.getValue();
-                selectedComponents.append(entry.getKey()).append(", ");
-            }
+            JCheckBox checkBox = new JCheckBox(entry.getKey() + " (Rp" + entry.getValue() + ")");
+            checkBox.setBounds(10, yPos, 480, 25);
+            componentPanel.add(checkBox);
+            checkBoxMap.put(checkBox, entry.getKey());
+            yPos += 30;
         }
 
-        if (totalCost > 0) {
-            if (serviceChoice == 1) {
-                System.out.println("Komponen yang rusak: " + selectedComponents.toString());
-                System.out.println("Biaya total " + service.toLowerCase() + ": Rp" + totalCost);
-            } else {
-                System.out.println("Komponen yang di tune up: " + selectedComponents.toString());
-                System.out.println("Biaya total " + service.toLowerCase() + ": Rp" + totalCost);
+        JButton proceedButton = new JButton("Lanjutkan");
+        proceedButton.setBounds(10, yPos, 150, 25);
+        componentPanel.add(proceedButton);
+        proceedButton.addActionListener(e -> {
+            totalCost = 0;
+            selectedComponents = new StringBuilder();
+            for (Map.Entry<JCheckBox, String> entry : checkBoxMap.entrySet()) {
+                if (entry.getKey().isSelected()) {
+                    totalCost += components.get(entry.getValue());
+                    selectedComponents.append(entry.getValue()).append(", ");
+                }
             }
-        } else {
-            if (serviceChoice == 1) {
-                System.out.println("Tidak ada komponen yang rusak.");
-            } else {
-                System.out.println("Tidak ada komponen yang di tune up.");
-            }
-        }
 
-        PaymentProcessor.processPayment(service + " kendaraan", totalCost, scanner);
+            if (totalCost > 0) {
+                if (serviceChoice == 1) {
+                    JOptionPane.showMessageDialog(panel, "Komponen yang rusak: " + selectedComponents.toString()
+                            + "\nBiaya total servis: Rp" + totalCost);
+                } else {
+                    JOptionPane.showMessageDialog(panel, "Komponen yang di tune up: " + selectedComponents.toString()
+                            + "\nBiaya total tune up: Rp" + totalCost);
+                }
+            } else {
+                if (serviceChoice == 1) {
+                    JOptionPane.showMessageDialog(panel, "Tidak ada komponen yang rusak.");
+                } else {
+                    JOptionPane.showMessageDialog(panel, "Tidak ada komponen yang di tune up.");
+                }
+            }
+
+            PaymentProcessor.processPayment(service + " kendaraan", totalCost, mainPanel, cardLayout);
+        });
+
+        mainPanel.add(componentPanel, "component");
+        cardLayout.show(mainPanel, "component");
     }
 }

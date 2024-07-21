@@ -1,82 +1,119 @@
+import javax.swing.*;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 public class buyVehicleService {
-    private Scanner scanner;
+    private JPanel panel;
     private Map<String, Integer> vehicles;
     private String vehicleType;
+    private JPanel mainPanel;
+    private CardLayout cardLayout;
 
-    public buyVehicleService(Scanner scanner) {
-        this.scanner = scanner;
+    public buyVehicleService(JPanel mainPanel, CardLayout cardLayout) {
+        this.mainPanel = mainPanel;
+        this.cardLayout = cardLayout;
+        panel = new JPanel();
+        panel.setLayout(null);
+
+        JLabel chooseVehicleLabel = new JLabel("Pilih kendaraan yang ingin Anda beli:");
+        chooseVehicleLabel.setBounds(10, 20, 480, 25);
+        panel.add(chooseVehicleLabel);
+
+        JButton carButton = new JButton("Mobil");
+        carButton.setBounds(10, 60, 150, 25);
+        panel.add(carButton);
+        carButton.addActionListener(e -> showVehicles(1));
+
+        JButton bikeButton = new JButton("Motor");
+        bikeButton.setBounds(10, 100, 150, 25);
+        panel.add(bikeButton);
+        bikeButton.addActionListener(e -> showVehicles(2));
     }
 
-    public void buyVehicle() {
-        System.out.println("Pilih kendaraan yang ingin Anda beli:");
-        System.out.println("1. Mobil");
-        System.out.println("2. Motor");
-        System.out.print("Masukkan input : ");
+    public JPanel getPanel() {
+        return panel;
+    }
 
-        int vehicleChoice = scanner.nextInt();
-        scanner.nextLine();
+    private void showVehicles(int vehicleChoice) {
+        vehicles = VehicleManagement.getVehicles(vehicleChoice);
+        vehicleType = (vehicleChoice == 1) ? "Mobil" : "Motor";
 
-        vehicles = new HashMap<>();
-        vehicleType = "";
-        switch (vehicleChoice) {
-            case 1:
-                vehicles.put("Nissan GTR", 300000000);
-                vehicles.put("Lamborghini Aventador", 350000000);
-                vehicles.put("Koenigsegg Jesko", 400000000);
-                vehicles.put("BMW M4", 450000000);
-                vehicles.put("Avanza", 500000000);
-                vehicleType = "Mobil";
-                break;
-            case 2:
-                vehicles.put("Ducati Panigale", 15000000);
-                vehicles.put("Kawasaki Ninja H2R", 20000000);
-                vehicles.put("Harley Davidson", 25000000);
-                vehicles.put("Yamaha R15", 30000000);
-                vehicles.put("Honda CBR", 35000000);
-                vehicleType = "Motor";
-                break;
-            default:
-                System.out.println("Pilihan tidak valid.");
-                return;
-        }
+        JPanel vehiclePanel = new JPanel();
+        vehiclePanel.setLayout(null);
 
-        System.out.println("Pilih " + vehicleType + " yang ingin Anda beli:");
-        int i = 1;
+        JLabel chooseLabel = new JLabel("Pilih " + vehicleType + " yang ingin Anda beli:");
+        chooseLabel.setBounds(10, 20, 480, 25);
+        vehiclePanel.add(chooseLabel);
+
+        int yPos = 60;
+        ButtonGroup group = new ButtonGroup();
+        Map<JRadioButton, String> buttonMap = new HashMap<>();
         for (Map.Entry<String, Integer> entry : vehicles.entrySet()) {
-            System.out.println(i + ". " + entry.getKey() + " - Rp" + entry.getValue());
-            i++;
-        }
-        System.out.print("Masukkan input : ");
-
-        int selectedVehicleIndex = scanner.nextInt() - 1;
-        scanner.nextLine();
-
-        if (selectedVehicleIndex < 0 || selectedVehicleIndex >= vehicles.size()) {
-            System.out.println("Pilihan tidak valid.");
-            return;
+            JRadioButton button = new JRadioButton(entry.getKey() + " - Rp" + entry.getValue());
+            button.setBounds(10, yPos, 480, 25);
+            vehiclePanel.add(button);
+            group.add(button);
+            buttonMap.put(button, entry.getKey());
+            yPos += 30;
         }
 
-        String selectedVehicle = (String) vehicles.keySet().toArray()[selectedVehicleIndex];
-        int vehiclePrice = vehicles.get(selectedVehicle);
-        System.out.println("Anda memilih untuk membeli: " + selectedVehicle + " dengan harga Rp" + vehiclePrice);
+        JButton proceedButton = new JButton("Lanjutkan");
+        proceedButton.setBounds(10, yPos, 150, 25);
+        vehiclePanel.add(proceedButton);
+        proceedButton.addActionListener(e -> {
+            for (Map.Entry<JRadioButton, String> entry : buttonMap.entrySet()) {
+                if (entry.getKey().isSelected()) {
+                    String selectedVehicle = entry.getValue();
+                    int vehiclePrice = vehicles.get(selectedVehicle);
+                    JOptionPane.showMessageDialog(panel,
+                            "Anda memilih untuk membeli: " + selectedVehicle + " dengan harga Rp" + vehiclePrice);
+                    requestKKandKTP(selectedVehicle, vehiclePrice);
+                    return;
+                }
+            }
+            JOptionPane.showMessageDialog(panel, "Pilihan tidak valid.");
+        });
 
-        System.out.println("Masukkan No Kartu Keluarga:");
-        System.out.print("Masukkan input : ");
-        String noKK = scanner.nextLine();
-        System.out.println("Masukkan No KTP:");
-        System.out.print("Masukkan input : ");
-        String noKTP = scanner.nextLine();
+        mainPanel.add(vehiclePanel, "chooseVehicle");
+        cardLayout.show(mainPanel, "chooseVehicle");
+    }
 
-        if (noKK.isEmpty() || noKTP.isEmpty()) {
-            System.out.println("Verifikasi ditolak. No Kartu Keluarga dan No KTP harus diisi.");
-            Main.main(null); // Kembali ke menu utama
-            return;
-        }
+    private void requestKKandKTP(String selectedVehicle, int vehiclePrice) {
+        JPanel kkKtpPanel = new JPanel();
+        kkKtpPanel.setLayout(null);
 
-        PaymentProcessor.processPayment("Pembelian " + selectedVehicle, vehiclePrice, scanner);
+        JLabel kkLabel = new JLabel("Masukkan No Kartu Keluarga:");
+        kkLabel.setBounds(10, 20, 200, 25);
+        kkKtpPanel.add(kkLabel);
+
+        JTextField kkField = new JTextField(20);
+        kkField.setBounds(220, 20, 150, 25);
+        kkKtpPanel.add(kkField);
+
+        JLabel ktpLabel = new JLabel("Masukkan No KTP:");
+        ktpLabel.setBounds(10, 60, 200, 25);
+        kkKtpPanel.add(ktpLabel);
+
+        JTextField ktpField = new JTextField(20);
+        ktpField.setBounds(220, 60, 150, 25);
+        kkKtpPanel.add(ktpField);
+
+        JButton proceedButton = new JButton("Lanjutkan");
+        proceedButton.setBounds(10, 100, 150, 25);
+        kkKtpPanel.add(proceedButton);
+        proceedButton.addActionListener(e -> {
+            String noKK = kkField.getText();
+            String noKTP = ktpField.getText();
+            if (noKK.isEmpty() || noKTP.isEmpty()) {
+                JOptionPane.showMessageDialog(panel, "Verifikasi ditolak. No Kartu Keluarga dan No KTP harus diisi.");
+                cardLayout.show(mainPanel, "menu");
+                return;
+            }
+            PaymentProcessor.processPayment("Pembelian " + selectedVehicle, vehiclePrice, mainPanel, cardLayout);
+        });
+
+        mainPanel.add(kkKtpPanel, "kkKtp");
+        cardLayout.show(mainPanel, "kkKtp");
     }
 }
